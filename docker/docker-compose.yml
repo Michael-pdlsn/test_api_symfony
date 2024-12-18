@@ -1,0 +1,105 @@
+services:
+  app_php:
+    image: php:8.3-fpm
+    container_name: app_php
+    build:
+      context: ./php
+      dockerfile: Dockerfile
+    volumes:
+      - ${PROJECT_SOURCE}:/var/www/html
+    depends_on:
+      - postgres
+      - redis
+      - rabbitmq
+      - memcached
+      - elasticsearch
+    networks:
+      backend:
+        aliases:
+          - app_php
+  nginx:
+    image: nginx:latest
+    container_name: nginx
+    ports:
+      - "${NGINX_PORT}:80"
+    volumes:
+      - ${PROJECT_SOURCE}:/var/www/html
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./data/nginx/cache:/var/cache/nginx
+      - ./data/nginx/logs:/var/log/nginx
+      - ./data/nginx/run:/var/run
+    environment:
+      - NGINX_USER=www-data
+    user: "${UID}:${GID}"
+    depends_on:
+      - app_php
+    networks:
+      backend:
+        aliases:
+          - app_php
+  postgres:
+    image: postgres:latest
+    container_name: postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - ${PGDATA_PATH}:/var/lib/postgresql
+    networks:
+      - backend
+
+  redis:
+    user: "${UID}:${GID}"
+    image: redis:latest
+    container_name: redis
+    volumes:
+      - ${REDISDATA_PATH}:/data
+    networks:
+      - backend
+
+  rabbitmq:
+    user: "${UID}:${GID}"
+    image: rabbitmq:management
+    container_name: rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
+    ports:
+      - "15672:15672"
+    volumes:
+      - ${RABBITMQDATA_PATH}:/var/lib/rabbitmq
+    networks:
+      - backend
+
+  memcached:
+    user: "${UID}:${GID}"
+    image: memcached:latest
+    container_name: memcached
+    networks:
+      - backend
+
+  elasticsearch:
+    user: "${UID}:${GID}"
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.6.2
+    container_name: elasticsearch
+    environment:
+      - discovery.type=single-node
+    ports:
+      - "9200:9200"
+    volumes:
+      - ${ELASTICSEARCHDATA_PATH}:/usr/share/elasticsearch/data
+    networks:
+      - backend
+
+networks:
+  backend:
+    driver: bridge
+
+volumes:
+  pgdata:
+  redisdata:
+  rabbitmqdata:
+  elasticsearchdata:

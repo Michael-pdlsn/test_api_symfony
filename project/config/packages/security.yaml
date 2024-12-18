@@ -1,0 +1,13 @@
+security:
+
+    providers:
+        custom_login_provider:
+            id: App\Security\CustomUserProvider
+
+    firewalls:
+        main:
+            stateless: true
+            custom_authenticator:
+                    - App\Security\BearerAuthenticator
+            provider: custom_login_provider
+
