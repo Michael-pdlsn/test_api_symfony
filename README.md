@@ -13,7 +13,7 @@
 
 docker-compose build
 
-docker-compose up
+docker-compose up -d
 
 docker exec -it app_php composer install
 
