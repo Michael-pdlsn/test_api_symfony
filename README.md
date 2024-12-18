@@ -22,3 +22,7 @@ docker exec -it app_php php bin/console doctrine:migrations:migrate
 docker exec -it app_php php bin/console doctrine:fixtures:load
 
 
+Перевіряв на: 
+Ubuntu 24.04.1 LTS
+Docker version 27.4.0
+Docker Compose version v2.29.7
