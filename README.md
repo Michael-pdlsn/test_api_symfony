@@ -3,10 +3,17 @@
 Дамб бази у db_dump.
 Ще додав docker і коллекцію Postman з прикладами запитів. 
 Для запуску потрібно скопіювати вміст .env.bck у .env, у двох місцях у папці docker та project.
+
 Потім команди:
+
 docker-compose build
+
 docker-compose up
+
 docker exec -it app_php composer install
+
 docker exec -it app_php php bin/console doctrine:migrations:migrate
+
 docker exec -it app_php php bin/console doctrine:fixtures:load
+
 
