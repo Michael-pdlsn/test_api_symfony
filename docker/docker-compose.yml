@@ -8,15 +8,12 @@ services:
     volumes:
       - ${PROJECT_SOURCE}:/var/www/html
     depends_on:
-      - postgres
-      - redis
-      - rabbitmq
-      - memcached
-      - elasticsearch
+      - mysql
     networks:
       backend:
         aliases:
           - app_php
+
   nginx:
     image: nginx:latest
     container_name: nginx
@@ -37,69 +34,22 @@ services:
       backend:
         aliases:
           - app_php
-  postgres:
-    image: postgres:latest
-    container_name: postgres
-    ports:
-      - "5432:5432"
+
+  mysql:
+    image: mysql:8.0
+    container_name: mysql
     environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
     volumes:
-      - ${PGDATA_PATH}:/var/lib/postgresql
-    networks:
-      - backend
-
-  redis:
-    user: "${UID}:${GID}"
-    image: redis:latest
-    container_name: redis
-    volumes:
-      - ${REDISDATA_PATH}:/data
-    networks:
-      - backend
-
-  rabbitmq:
-    user: "${UID}:${GID}"
-    image: rabbitmq:management
-    container_name: rabbitmq
-    environment:
-      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
-      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
+      - ${MYSQLDATA_PATH}:/var/lib/mysql
     ports:
-      - "15672:15672"
-    volumes:
-      - ${RABBITMQDATA_PATH}:/var/lib/rabbitmq
-    networks:
-      - backend
-
-  memcached:
-    user: "${UID}:${GID}"
-    image: memcached:latest
-    container_name: memcached
-    networks:
-      - backend
-
-  elasticsearch:
-    user: "${UID}:${GID}"
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.6.2
-    container_name: elasticsearch
-    environment:
-      - discovery.type=single-node
-    ports:
-      - "9200:9200"
-    volumes:
-      - ${ELASTICSEARCHDATA_PATH}:/usr/share/elasticsearch/data
+      - "3306:3306"
     networks:
       - backend
 
 networks:
   backend:
     driver: bridge
-
-volumes:
-  pgdata:
-  redisdata:
-  rabbitmqdata:
-  elasticsearchdata:
